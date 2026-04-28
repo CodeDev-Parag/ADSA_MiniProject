@@ -92,7 +92,7 @@ body::after {
 }
 
 /* ─── LAYOUT ─── */
-.container { max-width: 1280px; margin: 0 auto; padding: 0 1rem; position: relative; z-index: 1; }
+.container { max-width: 1440px; margin: 0 auto; padding: 0 1rem; position: relative; z-index: 1; }
 @media (min-width: 640px) { .container { padding: 0 1.5rem; } }
 @media (min-width: 1024px) { .container { padding: 0 2rem; } }
 
@@ -199,9 +199,13 @@ body::after {
   gap: 1.5rem;
   margin: 1.5rem 0;
   opacity: 0; animation: fadeInUp 0.6s var(--ease) 0.5s forwards;
+  align-items: start;
 }
 @media (min-width: 1024px) {
-  .main-grid { grid-template-columns: 3fr 1fr; }
+  .main-grid { grid-template-columns: 2fr 1fr; }
+}
+@media (min-width: 1280px) {
+  .main-grid { grid-template-columns: 2.2fr 0.8fr 1.6fr; }
 }
 
 /* ─── CANVAS AREA ─── */
@@ -347,6 +351,12 @@ body::after {
 
 /* ─── CODE PANEL ─── */
 .code-section {
+  margin: 0; /* Removed top/bottom margin since it will be in the grid */
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.code-section-wrapper {
   margin: 2rem 0;
   opacity: 0; animation: fadeInUp 0.6s var(--ease) 0.7s forwards;
 }
@@ -369,6 +379,7 @@ body::after {
   border: 2px solid hsl(220, 15%, 12%);
   border-radius: 0.5rem;
   overflow: hidden;
+  max-height: 550px;
 }
 
 /* Terminal title bar */
@@ -393,6 +404,7 @@ body::after {
 .code-body {
   padding: 1rem 0;
   overflow-x: auto;
+  overflow-y: auto;
   font-family: var(--font-mono);
   font-size: 0.8125rem;
   line-height: 1.7;
