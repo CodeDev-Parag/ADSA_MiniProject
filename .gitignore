@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+.local/
+
+# IDE / Agent
+.agent/
+.agents/
+.gemini/
+.config/
+.replit
+.replitignore
+.npmrc
+
+# Build artifacts
+dist/
+*.log
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Old project copy
+DSA-JS-Web - Copy/
