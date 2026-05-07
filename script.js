@@ -90,8 +90,11 @@ const CODE_LINE_MAP = {
 
 // ─── STATE ───
 let startNode = 'A';
+let targetNode = 'F';
 let steps = [];
 let finalDistances = {};
+let finalPathEdges = [];
+let finalVisited = [];
 let currentStepIdx = -1;
 let isPlaying = false;
 let isFinished = false;
@@ -119,11 +122,15 @@ const speedLabel = document.getElementById('speed-label');
 const themeToggle = document.getElementById('theme-toggle');
 
 // ─── DIJKSTRA ALGORITHM ───
-function runDijkstra(graph, start) {
+function runDijkstra(graph, start, target) {
   const dist = {};
   const visited = [];
+  const parents = {};
   const stepsArr = [];
-  ALL_NODES.forEach(n => dist[n] = n === start ? 0 : Infinity);
+  ALL_NODES.forEach(n => {
+    dist[n] = n === start ? 0 : Infinity;
+    parents[n] = null;
+  });
 
   // Step: initialization
   stepsArr.push({
@@ -145,6 +152,15 @@ function runDijkstra(graph, start) {
 
     visited.push(u);
 
+    if (u === target) {
+      stepsArr.push({
+        current: u, updated: null,
+        distances: { ...dist }, visited: [...visited],
+        phase: 'done', message: `Target node ${target} reached! Early exit.`
+      });
+      break;
+    }
+
     // Step: visit node
     stepsArr.push({
       current: u, updated: null,
@@ -165,6 +181,7 @@ function runDijkstra(graph, start) {
 
       if (dist[u] + w < dist[v]) {
         dist[v] = dist[u] + w;
+        parents[v] = u;
         pq.push({ node: v, dist: dist[v] });
 
         stepsArr.push({
@@ -176,7 +193,15 @@ function runDijkstra(graph, start) {
     }
   }
 
-  return { steps: stepsArr, finalDistances: { ...dist } };
+  // Trace back path
+  const pathEdges = [];
+  let curr = target;
+  while (curr !== start && parents[curr]) {
+    pathEdges.push([parents[curr], curr].sort().join('-'));
+    curr = parents[curr];
+  }
+
+  return { steps: stepsArr, finalDistances: { ...dist }, finalPath: pathEdges, finalVisited: visited };
 }
 
 // ─── CANVAS RENDERING ───
@@ -203,25 +228,36 @@ function drawGraph(state) {
       drawn.add(id);
       const p2 = NODE_POS[edge.to];
 
-      // Check if this edge is on the active path
+      // Check if this edge is on the active path or final path
+      const isFinalPath = state.finalPath && state.finalPath.includes(id);
       const isActiveEdge = (current === from && updated === edge.to) ||
                            (current === edge.to && updated === from);
 
       ctx.beginPath();
       ctx.moveTo(p1.x * scale, p1.y * scale);
       ctx.lineTo(p2.x * scale, p2.y * scale);
-      ctx.strokeStyle = isActiveEdge ? COLORS.nodeUpdating : COLORS.edge;
-      ctx.lineWidth = (isActiveEdge ? 3 : 2) * scale;
+      
+      if (isFinalPath) {
+        ctx.strokeStyle = '#0ea5e9'; // Cyan for final path
+        ctx.lineWidth = 4 * scale;
+        ctx.shadowColor = '#0ea5e9';
+        ctx.shadowBlur = 8 * scale;
+      } else {
+        ctx.strokeStyle = isActiveEdge ? COLORS.nodeUpdating : COLORS.edge;
+        ctx.lineWidth = (isActiveEdge ? 3 : 2) * scale;
+        ctx.shadowBlur = 0;
+      }
       ctx.stroke();
+      ctx.shadowBlur = 0; // reset
 
       // Weight label
       const mx = (p1.x + p2.x) / 2 * scale;
       const my = (p1.y + p2.y) / 2 * scale;
       ctx.beginPath();
       ctx.arc(mx, my, 14 * scale, 0, Math.PI * 2);
-      ctx.fillStyle = isActiveEdge ? COLORS.nodeUpdating : COLORS.edgeWeightBg;
+      ctx.fillStyle = isFinalPath ? '#0ea5e9' : (isActiveEdge ? COLORS.nodeUpdating : COLORS.edgeWeightBg);
       ctx.fill();
-      ctx.fillStyle = COLORS.text;
+      ctx.fillStyle = (isFinalPath || isActiveEdge) ? COLORS.textDark : COLORS.text;
       ctx.font = `bold ${12 * scale}px 'JetBrains Mono', monospace`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
@@ -397,10 +433,16 @@ function finish() {
   isFinished = true;
   drawGraph({
     current: null, updated: null,
-    distances: finalDistances, visited: ALL_NODES,
+    distances: finalDistances, visited: finalVisited,
+    finalPath: finalPathEdges
   });
   updateDistGrid(finalDistances);
-  statusMsg.textContent = 'Algorithm complete! Shortest paths found from node ' + startNode + '.';
+  
+  if (finalDistances[targetNode] === Infinity) {
+    statusMsg.textContent = `Algorithm complete! Node ${targetNode} is unreachable from ${startNode}.`;
+  } else {
+    statusMsg.textContent = `Algorithm complete! Shortest path to ${targetNode} is ${finalDistances[targetNode]}.`;
+  }
   highlightCodeLines('done');
   updateButtons();
 }
@@ -425,10 +467,12 @@ function handleRun() {
   if (isPlaying) return;
   resetVisualization();
 
-  statusMsg.textContent = `Running Dijkstra from node ${startNode}...`;
-  const result = runDijkstra(GRAPH, startNode);
+  statusMsg.textContent = `Running Dijkstra from ${startNode} to ${targetNode}...`;
+  const result = runDijkstra(GRAPH, startNode, targetNode);
   steps = result.steps;
   finalDistances = result.finalDistances;
+  finalPathEdges = result.finalPath;
+  finalVisited = result.finalVisited;
   currentStepIdx = -1;
   isFinished = false;
 
@@ -501,14 +545,57 @@ function loadTheme() {
   }
 }
 
-// ─── START NODE SELECTION ───
-function selectStartNode(node) {
+// ─── START & TARGET NODE SELECTION ───
+function selectNode(type, node) {
   if (isPlaying) return;
-  startNode = node;
-  document.querySelectorAll('.node-btn').forEach(b => {
-    b.classList.toggle('active', b.dataset.node === node);
-  });
+  if (type === 'start') {
+    startNode = node;
+    document.querySelectorAll('.node-btn[data-type="start"]').forEach(b => {
+      b.classList.toggle('active', b.dataset.node === node);
+    });
+  } else if (type === 'target') {
+    targetNode = node;
+    document.querySelectorAll('.node-btn[data-type="target"]').forEach(b => {
+      b.classList.toggle('active', b.dataset.node === node);
+    });
+  }
   resetVisualization();
+}
+
+// ─── INTERACTIVE EDGE EDITING ───
+function handleCanvasClick(e) {
+  if (isPlaying) return;
+  const rect = canvas.getBoundingClientRect();
+  const scale = canvas.width / 650;
+  const x = (e.clientX - rect.left) / scale;
+  const y = (e.clientY - rect.top) / scale;
+
+  for (const [from, edges] of Object.entries(GRAPH)) {
+    const p1 = NODE_POS[from];
+    for (const edge of edges) {
+      const p2 = NODE_POS[edge.to];
+      const mx = (p1.x + p2.x) / 2;
+      const my = (p1.y + p2.y) / 2;
+
+      // Check distance to the weight bubble center
+      const dist = Math.hypot(x - mx, y - my);
+      if (dist <= 14) { // 14 is the unscaled radius
+        let newWeight = prompt(`Enter new weight for edge ${from} - ${edge.to}:`, edge.w);
+        if (newWeight !== null && newWeight.trim() !== "") {
+          let w = parseInt(newWeight);
+          if (!isNaN(w)) {
+            edge.w = w;
+            // Update reverse edge if it exists to keep graph undirected
+            let reverseEdge = GRAPH[edge.to].find(e => e.to === from);
+            if (reverseEdge) reverseEdge.w = w;
+            
+            resetVisualization();
+            return; // Only process one click
+          }
+        }
+      }
+    }
+  }
 }
 
 // ─── RESIZE HANDLER ───
@@ -540,10 +627,11 @@ function init() {
   themeToggle.addEventListener('click', toggleTheme);
 
   document.querySelectorAll('.node-btn').forEach(btn => {
-    btn.addEventListener('click', () => selectStartNode(btn.dataset.node));
+    btn.addEventListener('click', () => selectNode(btn.dataset.type, btn.dataset.node));
   });
 
   window.addEventListener('resize', handleResize);
+  canvas.addEventListener('click', handleCanvasClick);
   updateSpeed(); // set initial speed label
 }
 
