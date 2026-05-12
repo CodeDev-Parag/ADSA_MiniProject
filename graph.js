@@ -25,44 +25,75 @@ const COLORS = {
   textDark: '#0f1117', edge: '#64748b', edgeWeightBg: '#1e293b',
 };
 
-// ─── C++ CODE LINES (for display + line highlighting) ───
-const CPP_CODE = [
-  { code: 'void bfs(int start, vector<vector<int>>& adj) {', cls: 'syn-keyword' },
-  { code: '    vector<bool> visited(adj.size(), false);', plain: true },
+// ─── OPERATION-SPECIFIC C++ CODE ───
+const CODE_BFS = [
+  { code: 'void bfs(int start,', mix: [{ t: 'void', c: 'syn-type' }, { t: ' bfs(', c: '' }, { t: 'int', c: 'syn-type' }, { t: ' start,', c: '' }] },
+  { code: '         vector<vector<int>>& adj) {', plain: true },
+  { code: '    vector<bool> visited(n, false);', mix: [{ t: '    vector<', c: '' }, { t: 'bool', c: 'syn-type' }, { t: '> visited(n, ', c: '' }, { t: 'false', c: 'syn-keyword' }, { t: ');', c: '' }] },
   { code: '    queue<int> q;', plain: true },
   { code: '    visited[start] = true;', plain: true },
   { code: '    q.push(start);', plain: true },
   { code: '' },
-  { code: '    while (!q.empty()) {', plain: true },
+  { code: '    while (!q.empty()) {', mix: [{ t: '    ', c: '' }, { t: 'while', c: 'syn-keyword' }, { t: ' (!q.empty()) {', c: '' }] },
   { code: '        int u = q.front();', plain: true },
   { code: '        q.pop();', plain: true },
   { code: '' },
-  { code: '        for (int v : adj[u]) {', plain: true },
-  { code: '            if (!visited[v]) {', plain: true },
+  { code: '        for (int v : adj[u]) {', mix: [{ t: '        ', c: '' }, { t: 'for', c: 'syn-keyword' }, { t: ' (', c: '' }, { t: 'int', c: 'syn-type' }, { t: ' v : adj[u]) {', c: '' }] },
+  { code: '            if (!visited[v]) {', mix: [{ t: '            ', c: '' }, { t: 'if', c: 'syn-keyword' }, { t: ' (!visited[v]) {', c: '' }] },
   { code: '                visited[v] = true;', plain: true },
   { code: '                q.push(v);', plain: true },
   { code: '            }', plain: true },
   { code: '        }', plain: true },
-  { code: '    }', plain: true },
-  { code: '}', plain: true }
+  { code: '    }  // O(V+E)', mix: [{ t: '    }  ', c: '' }, { t: '// O(V+E)', c: 'syn-comment' }] },
+  { code: '}', plain: true },
 ];
 
-const CODE_LINE_MAP = {
-  init: [1, 2, 3, 4],
+const CODE_DFS = [
+  { code: 'void dfs(int start,', mix: [{ t: 'void', c: 'syn-type' }, { t: ' dfs(', c: '' }, { t: 'int', c: 'syn-type' }, { t: ' start,', c: '' }] },
+  { code: '         vector<vector<int>>& adj) {', plain: true },
+  { code: '    vector<bool> visited(n, false);', mix: [{ t: '    vector<', c: '' }, { t: 'bool', c: 'syn-type' }, { t: '> visited(n, ', c: '' }, { t: 'false', c: 'syn-keyword' }, { t: ');', c: '' }] },
+  { code: '    stack<int> s;', plain: true },
+  { code: '    s.push(start);', plain: true },
+  { code: '' },
+  { code: '    while (!s.empty()) {', mix: [{ t: '    ', c: '' }, { t: 'while', c: 'syn-keyword' }, { t: ' (!s.empty()) {', c: '' }] },
+  { code: '        int u = s.top();', plain: true },
+  { code: '        s.pop();', plain: true },
+  { code: '' },
+  { code: '        if (visited[u]) continue;', mix: [{ t: '        ', c: '' }, { t: 'if', c: 'syn-keyword' }, { t: ' (visited[u]) ', c: '' }, { t: 'continue', c: 'syn-keyword' }, { t: ';', c: '' }] },
+  { code: '        visited[u] = true;', plain: true },
+  { code: '' },
+  { code: '        for (int v : adj[u]) {', mix: [{ t: '        ', c: '' }, { t: 'for', c: 'syn-keyword' }, { t: ' (', c: '' }, { t: 'int', c: 'syn-type' }, { t: ' v : adj[u]) {', c: '' }] },
+  { code: '            if (!visited[v])', mix: [{ t: '            ', c: '' }, { t: 'if', c: 'syn-keyword' }, { t: ' (!visited[v])', c: '' }] },
+  { code: '                s.push(v);', plain: true },
+  { code: '        }', plain: true },
+  { code: '    }  // O(V+E)', mix: [{ t: '    }  ', c: '' }, { t: '// O(V+E)', c: 'syn-comment' }] },
+  { code: '}', plain: true },
+];
+
+const CODE_LINE_MAP_BFS = {
+  init: [2, 3, 4, 5],
+  pickNode: [7, 8, 9],
+  iterNeighbors: [11],
+  checkRelax: [12],
+  relax: [13, 14],
+  done: [17, 18],
+};
+
+const CODE_LINE_MAP_DFS = {
+  init: [2, 3, 4],
   pickNode: [6, 7, 8],
-  skipNode: [],
-  iterNeighbors: [10],
-  checkRelax: [11],
-  relax: [12, 13],
-  done: [18],
+  skipNode: [10],
+  markVisited: [11],
+  iterNeighbors: [13],
+  checkRelax: [14],
+  relax: [15],
+  done: [17, 18],
 };
 
 // ─── STATE ───
 let startNode = 'A';
 let traversalType = 'bfs';
 let steps = [];
-let finalDistances = {};
-let finalPathEdges = [];
 let finalVisited = [];
 let currentStepIdx = -1;
 let isPlaying = false;
@@ -71,7 +102,7 @@ let playTimer = null;
 let speedMultiplier = 1;
 
 const speedMap = { 1: 0.25, 2: 0.5, 3: 1, 4: 2, 5: 4 };
-const baseInterval = 1000; // ms at 1x speed
+const baseInterval = 1000;
 
 // ─── DOM REFS ───
 const canvas = document.getElementById('graph-canvas');
@@ -88,56 +119,103 @@ const btnStep = document.getElementById('btn-step');
 const btnReset = document.getElementById('btn-reset');
 const speedSlider = document.getElementById('speed-slider');
 const speedLabel = document.getElementById('speed-label');
-const themeToggle = document.getElementById('theme-toggle');
 
 // ─── TRAVERSAL ALGORITHM ───
 function runTraversal(graph, start, type) {
   const visited = [];
   const stepsArr = [];
-  const distances = {}; // just for state compatibility
+  const dsName = type === 'bfs' ? 'Queue' : 'Stack';
 
   stepsArr.push({
-    current: start, updated: null, distances, visited: [...visited],
-    phase: 'init', message: `Initialize: push ${start} to ${type==='bfs'?'Queue':'Stack'}`
+    current: start, updated: null, visited: [...visited],
+    phase: 'init', message: `Initialize: push ${start} to ${dsName}`
   });
 
-  const collection = [start];
-  visited.push(start);
+  if (type === 'bfs') {
+    // BFS — Queue-based
+    const queue = [start];
+    visited.push(start);
 
-  while (collection.length > 0) {
-    const u = type === 'bfs' ? collection.shift() : collection.pop();
-
-    stepsArr.push({
-      current: u, updated: null, distances, visited: [...visited],
-      phase: 'pickNode', message: `Visit node ${u}`
-    });
-
-    for (const edge of graph[u]) {
-      const v = edge.to;
+    while (queue.length > 0) {
+      const u = queue.shift();
 
       stepsArr.push({
-        current: u, updated: v, distances, visited: [...visited],
-        phase: 'iterNeighbors', message: `Check neighbor ${v} of ${u}`
+        current: u, updated: null, visited: [...visited],
+        phase: 'pickNode', message: `Dequeue ${u} from Queue`
       });
 
-      if (!visited.includes(v)) {
-        visited.push(v);
-        collection.push(v);
-
+      for (const edge of graph[u]) {
+        const v = edge.to;
         stepsArr.push({
-          current: u, updated: v, distances, visited: [...visited],
-          phase: 'relax', message: `Mark ${v} visited and push to ${type==='bfs'?'Queue':'Stack'}`
+          current: u, updated: v, visited: [...visited],
+          phase: 'iterNeighbors', message: `Check neighbor ${v} of ${u}`
         });
+
+        if (!visited.includes(v)) {
+          visited.push(v);
+          queue.push(v);
+          stepsArr.push({
+            current: u, updated: v, visited: [...visited],
+            phase: 'relax', message: `Mark ${v} visited → push to Queue`
+          });
+        } else {
+          stepsArr.push({
+            current: u, updated: v, visited: [...visited],
+            phase: 'checkRelax', message: `${v} already visited — skip`
+          });
+        }
+      }
+    }
+  } else {
+    // DFS — Stack-based (iterative)
+    const stack = [start];
+
+    while (stack.length > 0) {
+      const u = stack.pop();
+
+      if (visited.includes(u)) {
+        stepsArr.push({
+          current: u, updated: null, visited: [...visited],
+          phase: 'skipNode', message: `${u} already visited — skip`
+        });
+        continue;
+      }
+
+      visited.push(u);
+      stepsArr.push({
+        current: u, updated: null, visited: [...visited],
+        phase: 'markVisited', message: `Pop ${u} from Stack — mark visited`
+      });
+
+      for (const edge of graph[u]) {
+        const v = edge.to;
+        stepsArr.push({
+          current: u, updated: v, visited: [...visited],
+          phase: 'iterNeighbors', message: `Check neighbor ${v} of ${u}`
+        });
+
+        if (!visited.includes(v)) {
+          stack.push(v);
+          stepsArr.push({
+            current: u, updated: v, visited: [...visited],
+            phase: 'relax', message: `Push ${v} to Stack`
+          });
+        } else {
+          stepsArr.push({
+            current: u, updated: v, visited: [...visited],
+            phase: 'checkRelax', message: `${v} already visited — skip`
+          });
+        }
       }
     }
   }
 
   stepsArr.push({
-    current: null, updated: null, distances, visited: [...visited],
-    phase: 'done', message: `Traversal complete!`
+    current: null, updated: null, visited: [...visited],
+    phase: 'done', message: `${type.toUpperCase()} complete! Visited: ${visited.join(' → ')}`
   });
 
-  return { steps: stepsArr, finalVisited: visited, finalDistances: distances, finalPath: [] };
+  return { steps: stepsArr, finalVisited: visited };
 }
 
 // ─── CANVAS RENDERING ───
@@ -148,7 +226,7 @@ function resizeCanvas() {
 }
 
 function drawGraph(state) {
-  const { current, updated, distances, visited } = state;
+  const { current, updated, visited } = state;
   const scale = canvas.width / 650;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -164,36 +242,25 @@ function drawGraph(state) {
       drawn.add(id);
       const p2 = NODE_POS[edge.to];
 
-      // Check if this edge is on the active path or final path
-      const isFinalPath = state.finalPath && state.finalPath.includes(id);
       const isActiveEdge = (current === from && updated === edge.to) ||
                            (current === edge.to && updated === from);
 
       ctx.beginPath();
       ctx.moveTo(p1.x * scale, p1.y * scale);
       ctx.lineTo(p2.x * scale, p2.y * scale);
-      
-      if (isFinalPath) {
-        ctx.strokeStyle = '#0ea5e9'; // Cyan for final path
-        ctx.lineWidth = 4 * scale;
-        ctx.shadowColor = '#0ea5e9';
-        ctx.shadowBlur = 8 * scale;
-      } else {
-        ctx.strokeStyle = isActiveEdge ? COLORS.nodeUpdating : COLORS.edge;
-        ctx.lineWidth = (isActiveEdge ? 3 : 2) * scale;
-        ctx.shadowBlur = 0;
-      }
+      ctx.strokeStyle = isActiveEdge ? COLORS.nodeUpdating : COLORS.edge;
+      ctx.lineWidth = (isActiveEdge ? 3 : 2) * scale;
+      ctx.shadowBlur = 0;
       ctx.stroke();
-      ctx.shadowBlur = 0; // reset
 
       // Weight label
       const mx = (p1.x + p2.x) / 2 * scale;
       const my = (p1.y + p2.y) / 2 * scale;
       ctx.beginPath();
       ctx.arc(mx, my, 14 * scale, 0, Math.PI * 2);
-      ctx.fillStyle = isFinalPath ? '#0ea5e9' : (isActiveEdge ? COLORS.nodeUpdating : COLORS.edgeWeightBg);
+      ctx.fillStyle = isActiveEdge ? COLORS.nodeUpdating : COLORS.edgeWeightBg;
       ctx.fill();
-      ctx.fillStyle = (isFinalPath || isActiveEdge) ? COLORS.textDark : COLORS.text;
+      ctx.fillStyle = isActiveEdge ? COLORS.textDark : COLORS.text;
       ctx.font = `bold ${12 * scale}px 'JetBrains Mono', monospace`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
@@ -236,83 +303,35 @@ function drawGraph(state) {
 
     // Node label
     ctx.fillStyle = textCol;
-    ctx.font = `bold ${16 * scale}px 'JetBrains Mono', monospace`;
+    ctx.font = `bold ${18 * scale}px 'JetBrains Mono', monospace`;
     ctx.textAlign = 'center';
-    ctx.textBaseline = 'bottom';
-    ctx.fillText(node, pos.x * scale, pos.y * scale - 2 * scale);
-
-    // Distance
-    const d = distances[node];
-    const dText = (d === Infinity || d === undefined) ? '∞' : d.toString();
-    ctx.font = `normal ${14 * scale}px 'JetBrains Mono', monospace`;
-    ctx.textBaseline = 'top';
-    ctx.fillText(dText, pos.x * scale, pos.y * scale + 4 * scale);
-  }
-}
-
-// ─── DISTANCE GRID UI ───
-function updateDistGrid(distances) {
-  distGrid.innerHTML = '';
-  for (const node of ALL_NODES) {
-    const d = distances[node];
-    const isInf = d === Infinity || d === undefined;
-    const cell = document.createElement('div');
-    cell.className = 'dist-cell';
-    cell.innerHTML = `<span class="node-label">${node}</span><span class="dist-val ${isInf ? 'infinity' : ''}">${isInf ? '∞' : d}</span>`;
-    distGrid.appendChild(cell);
+    ctx.textBaseline = 'middle';
+    ctx.fillText(node, pos.x * scale, pos.y * scale);
   }
 }
 
 // ─── CODE PANEL ───
-function buildCodePanel() {
+function buildCodePanel(code) {
   codeBody.innerHTML = '';
-  CPP_CODE.forEach((line, i) => {
-    const row = document.createElement('div');
-    row.className = 'code-line';
-    row.dataset.lineIdx = i;
-
-    const num = document.createElement('span');
-    num.className = 'code-line-num';
-    num.textContent = i + 1;
-
-    const content = document.createElement('span');
-    content.className = 'code-line-content';
-
-    if (line.mix) {
-      line.mix.forEach(part => {
-        const s = document.createElement('span');
-        if (part.c) s.className = part.c;
-        s.textContent = part.t;
-        content.appendChild(s);
-      });
-    } else if (line.cls) {
-      const s = document.createElement('span');
-      s.className = line.cls;
-      s.textContent = line.code;
-      content.appendChild(s);
-    } else {
-      content.textContent = line.code;
-    }
-
-    row.appendChild(num);
-    row.appendChild(content);
-    codeBody.appendChild(row);
+  code.forEach((line, i) => {
+    const row = document.createElement('div'); row.className = 'code-line'; row.dataset.lineIdx = i;
+    const num = document.createElement('span'); num.className = 'code-line-num'; num.textContent = i + 1;
+    const content = document.createElement('span'); content.className = 'code-line-content';
+    if (line.mix) { line.mix.forEach(p => { const s = document.createElement('span'); if (p.c) s.className = p.c; s.textContent = p.t; content.appendChild(s); }); }
+    else if (line.cls) { const s = document.createElement('span'); s.className = line.cls; s.textContent = line.code; content.appendChild(s); }
+    else { content.textContent = line.code; }
+    row.appendChild(num); row.appendChild(content); codeBody.appendChild(row);
   });
 }
 
 function highlightCodeLines(phase) {
-  // Clear all
   document.querySelectorAll('.code-line.active').forEach(el => el.classList.remove('active'));
-
-  const lines = CODE_LINE_MAP[phase];
+  const map = traversalType === 'bfs' ? CODE_LINE_MAP_BFS : CODE_LINE_MAP_DFS;
+  const lines = map[phase];
   if (!lines) return;
-
   lines.forEach(idx => {
     const row = codeBody.querySelector(`[data-line-idx="${idx}"]`);
-    if (row) {
-      row.classList.add('active');
-      row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-    }
+    if (row) { row.classList.add('active'); row.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
   });
 }
 
@@ -321,9 +340,7 @@ function applyStep(idx) {
   if (idx < 0 || idx >= steps.length) return;
   currentStepIdx = idx;
   const step = steps[idx];
-
   drawGraph(step);
-  updateDistGrid(step.distances);
   statusMsg.textContent = step.message;
   stepCounter.style.display = 'inline';
   stepCounter.textContent = `Step ${idx + 1} / ${steps.length}`;
@@ -334,14 +351,10 @@ function play() {
   if (isFinished || steps.length === 0) return;
   isPlaying = true;
   updateButtons();
-
   const interval = baseInterval / speedMultiplier;
   playTimer = setInterval(() => {
     const next = currentStepIdx + 1;
-    if (next >= steps.length) {
-      finish();
-      return;
-    }
+    if (next >= steps.length) { finish(); return; }
     applyStep(next);
   }, interval);
 }
@@ -357,17 +370,14 @@ function stepForward() {
   if (isFinished) return;
   pause();
   const next = currentStepIdx + 1;
-  if (next >= steps.length) {
-    finish();
-    return;
-  }
+  if (next >= steps.length) { finish(); return; }
   applyStep(next);
 }
 
 function finish() {
   pause();
   isFinished = true;
-  statusMsg.textContent = `Traversal complete! Visited ${finalVisited.length} nodes.`;
+  statusMsg.textContent = `Traversal complete! Visited: ${finalVisited.join(' → ')}`;
   highlightCodeLines('done');
   updateButtons();
 }
@@ -378,26 +388,21 @@ function resetVisualization() {
   currentStepIdx = -1;
   steps = [];
   stepCounter.style.display = 'none';
-  statusMsg.textContent = `Start node set to ${startNode}. Press Run.`;
-
-  const initDist = {};
-  ALL_NODES.forEach(n => initDist[n] = n === startNode ? 0 : Infinity);
-  drawGraph({ current: null, updated: null, distances: initDist, visited: [] });
-  updateDistGrid(initDist);
+  statusMsg.textContent = `Start node: ${startNode}. Select traversal type and press Run.`;
+  drawGraph({ current: null, updated: null, visited: [] });
   highlightCodeLines(null);
   updateButtons();
 }
 
+function handleRun() {
   traversalType = document.getElementById('traversal-type').value;
+  buildCodePanel(traversalType === 'bfs' ? CODE_BFS : CODE_DFS);
   statusMsg.textContent = `Running ${traversalType.toUpperCase()} from ${startNode}...`;
   const result = runTraversal(GRAPH, startNode, traversalType);
   steps = result.steps;
   finalVisited = result.finalVisited;
-  finalDistances = {};
-  finalPathEdges = [];
   currentStepIdx = -1;
   isFinished = false;
-
   play();
 }
 
@@ -408,17 +413,8 @@ function updateButtons() {
   btnPause.disabled = !running;
   btnStep.disabled = running || isFinished;
   btnReset.disabled = running;
-
-  // Disable node buttons during play
   document.querySelectorAll('.node-btn').forEach(b => b.disabled = running);
-
-  // Update run button text
-  if (isFinished) {
-    btnRun.disabled = true;
-  }
-
-  // Toggle pause button text
-  btnPause.querySelector('svg + span, span:last-child');
+  if (isFinished) btnRun.disabled = true;
 }
 
 // ─── SPEED CONTROL ───
@@ -426,8 +422,6 @@ function updateSpeed() {
   const val = parseInt(speedSlider.value);
   speedMultiplier = speedMap[val];
   speedLabel.textContent = speedMultiplier + 'x';
-
-  // If playing, restart timer with new speed
   if (isPlaying) {
     clearInterval(playTimer);
     const interval = baseInterval / speedMultiplier;
@@ -436,34 +430,6 @@ function updateSpeed() {
       if (next >= steps.length) { finish(); return; }
       applyStep(next);
     }, interval);
-  }
-}
-
-// ─── THEME TOGGLE ───
-function toggleTheme() {
-  const html = document.documentElement;
-  const body = document.body;
-  const isDark = body.classList.contains('dark');
-
-  body.classList.add('theme-transitioning');
-  body.classList.toggle('dark');
-
-  // Toggle icons
-  document.getElementById('icon-sun').style.display = isDark ? 'none' : 'block';
-  document.getElementById('icon-moon').style.display = isDark ? 'block' : 'none';
-
-  // Store preference
-  localStorage.setItem('theme', isDark ? 'light' : 'dark');
-
-  setTimeout(() => body.classList.remove('theme-transitioning'), 500);
-}
-
-function loadTheme() {
-  const saved = localStorage.getItem('theme');
-  if (saved === 'light') {
-    document.body.classList.remove('dark');
-    document.getElementById('icon-sun').style.display = 'none';
-    document.getElementById('icon-moon').style.display = 'block';
   }
 }
 
@@ -493,21 +459,17 @@ function handleCanvasClick(e) {
       const p2 = NODE_POS[edge.to];
       const mx = (p1.x + p2.x) / 2;
       const my = (p1.y + p2.y) / 2;
-
-      // Check distance to the weight bubble center
       const dist = Math.hypot(x - mx, y - my);
-      if (dist <= 14) { // 14 is the unscaled radius
+      if (dist <= 14) {
         let newWeight = prompt(`Enter new weight for edge ${from} - ${edge.to}:`, edge.w);
         if (newWeight !== null && newWeight.trim() !== "") {
           let w = parseInt(newWeight);
           if (!isNaN(w)) {
             edge.w = w;
-            // Update reverse edge if it exists to keep graph undirected
             let reverseEdge = GRAPH[edge.to].find(e => e.to === from);
             if (reverseEdge) reverseEdge.w = w;
-            
             resetVisualization();
-            return; // Only process one click
+            return;
           }
         }
       }
@@ -518,30 +480,32 @@ function handleCanvasClick(e) {
 // ─── RESIZE HANDLER ───
 function handleResize() {
   resizeCanvas();
-  // Redraw current state
   if (currentStepIdx >= 0 && steps[currentStepIdx]) {
     drawGraph(steps[currentStepIdx]);
   } else {
-    const initDist = {};
-    ALL_NODES.forEach(n => initDist[n] = n === startNode ? 0 : Infinity);
-    drawGraph({ current: null, updated: null, distances: initDist, visited: [] });
+    drawGraph({ current: null, updated: null, visited: [] });
   }
 }
 
+// ─── TRAVERSAL TYPE CHANGE ───
+document.getElementById('traversal-type').addEventListener('change', () => {
+  if (isPlaying) return;
+  traversalType = document.getElementById('traversal-type').value;
+  buildCodePanel(traversalType === 'bfs' ? CODE_BFS : CODE_DFS);
+  resetVisualization();
+});
+
 // ─── INIT ───
 function init() {
-  loadTheme();
-  buildCodePanel();
+  buildCodePanel(CODE_BFS);
   resizeCanvas();
   resetVisualization();
 
-  // Event listeners
   btnRun.addEventListener('click', handleRun);
   btnPause.addEventListener('click', pause);
   btnStep.addEventListener('click', stepForward);
   btnReset.addEventListener('click', resetVisualization);
   speedSlider.addEventListener('input', updateSpeed);
-  themeToggle.addEventListener('click', toggleTheme);
 
   document.querySelectorAll('.node-btn').forEach(btn => {
     btn.addEventListener('click', () => selectNode(btn.dataset.type, btn.dataset.node));
@@ -549,7 +513,7 @@ function init() {
 
   window.addEventListener('resize', handleResize);
   canvas.addEventListener('click', handleCanvasClick);
-  updateSpeed(); // set initial speed label
+  updateSpeed();
 }
 
 document.addEventListener('DOMContentLoaded', init);

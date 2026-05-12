@@ -200,18 +200,18 @@
       <div class="info-grid">
         <div class="info-card">
           <h3>Time Complexity</h3>
-          <div class="info-value">O((V+E) log V)</div>
-          <p>Using a min-heap (priority queue) for efficient vertex extraction.</p>
-        </div>
-        <div class="info-card">
-          <h3>Space Complexity</h3>
           <div class="info-value">O(V + E)</div>
-          <p>Adjacency list storage plus distance array and priority queue.</p>
+          <p>Visits every vertex and edge exactly once in both BFS and DFS.</p>
         </div>
         <div class="info-card">
-          <h3>Data Structure</h3>
-          <div class="info-value">Queue / Stack</div>
-          <p>BFS uses a Queue, DFS uses a Stack (or recursion).</p>
+          <h3>BFS Data Structure</h3>
+          <div class="info-value">Queue (FIFO)</div>
+          <p>Explores nodes level-by-level, finding shortest path in unweighted graphs.</p>
+        </div>
+        <div class="info-card">
+          <h3>DFS Data Structure</h3>
+          <div class="info-value">Stack (LIFO)</div>
+          <p>Goes as deep as possible before backtracking. Can use recursion or explicit stack.</p>
         </div>
       </div>
     </section>
@@ -226,6 +226,7 @@
     </div>
   </footer>
 
+  <script src="theme.js"></script>
   <script src="graph.js"></script>
 </body>
 

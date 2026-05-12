@@ -3,14 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tree Concept Visualizer — DSA.VIZ</title>
+  <title>Array Visualizer — DSA.VIZ</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    .tree-view { min-height: 400px; position: relative; background: var(--canvas-bg); border-radius: 0.5rem; overflow: hidden; display: flex; justify-content: center; align-items: flex-start; padding-top: 2rem; }
+    .array-view { min-height: 300px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; overflow-x: auto; padding: 2rem; }
+    .array-container { display: flex; align-items: flex-end; gap: 0.5rem; min-width: max-content; }
+    .array-item-wrapper { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; }
+    .array-item { width: 50px; height: 50px; border: 2px solid var(--border); background: var(--bg-surface); display: flex; justify-content: center; align-items: center; font-family: var(--font-mono); font-weight: bold; font-size: 1.125rem; transition: all 0.3s; border-radius: 0.25rem; }
+    .array-item.active { background: hsla(252, 87%, 55%, 0.2); border-color: var(--accent); color: var(--accent); transform: scale(1.1); z-index: 10; box-shadow: 0 0 15px var(--accent); }
+    .array-item.found { background: #22c55e; border-color: #16a34a; color: white; transform: scale(1.15); z-index: 10; box-shadow: 0 0 20px #22c55e; }
+    .item-index { font-size: 0.75rem; color: var(--fg-muted); font-family: var(--font-mono); }
     .controls-wrapper { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; margin-bottom: 1.5rem; }
-    .input-field { background: var(--bg-card); border: 2px solid var(--border); color: var(--fg); padding: 0.5rem 1rem; font-family: var(--font-mono); outline: none; width: 150px; }
+    .input-field { background: var(--bg-card); border: 2px solid var(--border); color: var(--fg); padding: 0.5rem 1rem; font-family: var(--font-mono); outline: none; width: 100px; }
     .input-field:focus { border-color: var(--accent); }
-    canvas { position: absolute; top: 0; left: 0; z-index: 1; }
     #log-container { font-family: var(--font-mono); font-size: 0.875rem; color: var(--fg-muted); height: 120px; overflow-y: auto; background: var(--bg-card); border: 1px solid var(--border); padding: 1rem; }
   </style>
 </head>
@@ -28,57 +33,76 @@
 
   <div class="container">
     <section class="hero" style="padding: 2rem 0 1rem;">
-      <h1>Binary Search<br><span class="accent">Tree</span></h1>
-      <p class="hero-desc">Visualize insertion into a Binary Search Tree with step-by-step traversal.</p>
-      <span class="complexity-badge">O(log N) avg / O(N) worst</span>
+      <h1>Array<br><span class="accent">Contiguous Memory</span></h1>
+      <p class="hero-desc">Visualize Access, Search, Insert, and Delete operations in a standard array.</p>
+      <span class="complexity-badge">O(1) Access / O(N) Search</span>
     </section>
 
+    <!-- Controls -->
     <div class="card controls-wrapper" style="max-width: 1100px; margin-left: auto; margin-right: auto; margin-bottom: 1.5rem;">
-      <input type="number" id="val-input" class="input-field" placeholder="Enter number..." />
-      <button class="btn btn-primary" id="btn-insert">Insert Node</button>
-      <button class="btn" id="btn-reset">Reset Tree</button>
+      <input type="number" id="idx-input" class="input-field" placeholder="Index..." />
+      <input type="number" id="val-input" class="input-field" placeholder="Value..." />
+      <button class="btn btn-primary" id="btn-access">Access</button>
+      <button class="btn" id="btn-search">Search</button>
+      <button class="btn" id="btn-insert">Insert At</button>
+      <button class="btn" id="btn-delete">Delete At</button>
+      <button class="btn" id="btn-reset">Reset</button>
     </div>
 
+    <!-- Main Grid: Visualization (left) + Code (right) -->
     <div class="main-grid centered-grid">
+      <!-- Left: Visualization + Status + Playback -->
       <div>
-        <div class="card tree-view" id="tree-view">
-          <canvas id="tree-canvas" width="800" height="400"></canvas>
+        <div class="card array-view" id="array-view-container">
+          <div class="array-container" id="array-view"></div>
         </div>
         <div class="card" style="margin-top:1rem; padding: 0.75rem 1rem;">
           <div class="status-bar">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-            <span id="status-message">Enter a number and click Insert Node.</span>
+            <span id="status-message">Enter an index or value and select an operation.</span>
           </div>
         </div>
       </div>
+
+      <!-- Right: Code Panel -->
       <div class="code-section" id="code-section">
         <div class="code-section-title">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-          C++ Implementation <span class="code-lang-badge">C++</span>
+          C++ Implementation
+          <span class="code-lang-badge">C++</span>
         </div>
         <div class="code-container" style="flex: 1; display: flex; flex-direction: column;">
-          <div class="code-titlebar"><div class="code-titlebar-dots"><span class="code-titlebar-dot red"></span><span class="code-titlebar-dot yellow"></span><span class="code-titlebar-dot green"></span></div><span class="code-titlebar-name">bst_insert.cpp</span></div>
+          <div class="code-titlebar">
+            <div class="code-titlebar-dots">
+              <span class="code-titlebar-dot red"></span>
+              <span class="code-titlebar-dot yellow"></span>
+              <span class="code-titlebar-dot green"></span>
+            </div>
+            <span class="code-titlebar-name">array.cpp</span>
+          </div>
           <div class="code-body" id="code-body" style="flex: 1;"></div>
         </div>
       </div>
     </div>
 
+    <!-- Operations Log (below) -->
     <div class="card" style="margin-top:1.5rem; max-width: 1100px; margin-left: auto; margin-right: auto;">
       <h3 class="panel-title">Operations Log</h3>
       <div id="log-container"></div>
     </div>
 
+    <!-- Info Cards -->
     <section class="info-section">
       <div class="info-grid">
-        <div class="info-card"><h3>Insert</h3><div class="info-value">O(log N)</div><p>Average case for balanced tree.</p></div>
-        <div class="info-card"><h3>Search</h3><div class="info-value">O(log N)</div><p>Binary search on tree structure.</p></div>
-        <div class="info-card"><h3>Worst Case</h3><div class="info-value">O(N)</div><p>Degenerate (skewed) tree.</p></div>
+        <div class="info-card"><h3>Access</h3><div class="info-value">O(1)</div><p>Direct index-based memory access.</p></div>
+        <div class="info-card"><h3>Search</h3><div class="info-value">O(N)</div><p>Linear scan through every element.</p></div>
+        <div class="info-card"><h3>Insert / Delete</h3><div class="info-value">O(N)</div><p>Shift elements right or left.</p></div>
       </div>
     </section>
   </div>
 
   <script src="theme.js"></script>
   <script src="playback.js"></script>
-  <script src="tree.js"></script>
+  <script src="array.js"></script>
 </body>
 </html>
