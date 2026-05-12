@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tree Concept Visualizer — DSA.VIZ</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .tree-view { min-height: 400px; position: relative; background: var(--canvas-bg); border-radius: 0.5rem; overflow: hidden; display: flex; justify-content: center; align-items: flex-start; padding-top: 2rem; }
+    .controls-wrapper { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; margin-bottom: 1.5rem; }
+    .input-field { background: var(--bg-card); border: 2px solid var(--border); color: var(--fg); padding: 0.5rem 1rem; font-family: var(--font-mono); outline: none; width: 150px; }
+    .input-field:focus { border-color: var(--accent); }
+    #log-container { font-family: var(--font-mono); font-size: 0.875rem; color: var(--fg-muted); height: 150px; overflow-y: auto; background: var(--bg-card); border: 1px solid var(--border); padding: 1rem; }
+    canvas { position: absolute; top: 0; left: 0; z-index: 1; }
+  </style>
+</head>
+<body class="dark">
+  <header class="header">
+    <div class="container header-inner">
+      <a class="logo" href="#"><span>DSA<span class="logo-dot">.</span>VIZ</span></a>
+      <a href="index.html" class="btn" style="margin-left: 1rem; padding: 0.4rem 0.8rem; font-size: 0.75rem;">← Dashboard</a>
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+        <svg id="icon-sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5" />
+          <line x1="12" y1="1" x2="12" y2="3" />
+          <line x1="12" y1="21" x2="12" y2="23" />
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+          <line x1="1" y1="12" x2="3" y2="12" />
+          <line x1="21" y1="12" x2="23" y2="12" />
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+        </svg>
+        <svg id="icon-moon" style="display:none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="container">
+    <section class="hero" style="padding: 2rem 0 1rem;">
+      <h1>Binary Search<br><span class="accent">Tree</span></h1>
+      <p class="hero-desc">Visualize insertion into a Binary Search Tree.</p>
+    </section>
+
+    <div class="card controls-wrapper">
+      <input type="number" id="val-input" class="input-field" placeholder="Enter number..." />
+      <button class="btn btn-primary" id="btn-insert">Insert Node</button>
+      <button class="btn" id="btn-reset">Reset Tree</button>
+    </div>
+
+    <div class="main-grid" style="grid-template-columns: 2fr 1fr;">
+      <div class="card tree-view" id="tree-view">
+        <canvas id="tree-canvas" width="800" height="400"></canvas>
+      </div>
+      <div class="sidebar">
+        <div class="card">
+          <h3 class="panel-title">Operations Log</h3>
+          <div id="log-container"></div>
+        </div>
+        <div class="info-card" style="margin-top:1rem;">
+          <h3>Properties</h3>
+          <p>Left child is smaller, right child is larger than parent.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="tree.js"></script>
+</body>
+</html>

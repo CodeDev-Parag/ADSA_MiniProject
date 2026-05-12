@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prim's Algorithm Visualizer — DSA.VIZ</title>
+  <meta name="description"
+    content="Interactive step-by-step visualization of Prim's Minimum Spanning Tree algorithm.">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="dark">
+
+  <!-- ═══════ HEADER ═══════ -->
+  <header class="header" id="header">
+    <div class="container header-inner">
+      <a class="logo" href="#">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="5" r="3" />
+          <line x1="12" y1="8" x2="12" y2="12" />
+          <circle cx="6" cy="19" r="3" />
+          <circle cx="18" cy="19" r="3" />
+          <line x1="12" y1="12" x2="6" y2="16" />
+          <line x1="12" y1="12" x2="18" y2="16" />
+        </svg>
+        <span>DSA<span class="logo-dot">.</span>VIZ</span>
+      </a>
+      <a href="index.html" class="btn" style="margin-left: 1rem; padding: 0.4rem 0.8rem; font-size: 0.75rem;">← Dashboard</a>
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+        <!-- Sun icon (shown in dark mode) -->
+        <svg id="icon-sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5" />
+          <line x1="12" y1="1" x2="12" y2="3" />
+          <line x1="12" y1="21" x2="12" y2="23" />
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+          <line x1="1" y1="12" x2="3" y2="12" />
+          <line x1="21" y1="12" x2="23" y2="12" />
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+        </svg>
+        <!-- Moon icon (shown in light mode) -->
+        <svg id="icon-moon" style="display:none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- ═══════ HERO ═══════ -->
+    <section class="hero" id="hero">
+      <div class="hero-badge">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="4 17 10 11 4 5" />
+          <line x1="12" y1="19" x2="20" y2="19" />
+        </svg>
+        ADSA Mini Project
+      </div>
+      <h1>Prim's<br><span class="accent">Minimum Spanning Tree</span><br>Algorithm<span class="accent">.</span></h1>
+      <p class="hero-desc">Find the Minimum Spanning Tree for a connected, weighted, undirected graph. Watch each step animate in
+        real-time. <b>Click on any edge weight bubble on the canvas to edit its value!</b></p>
+      <span class="complexity-badge">O((V+E) log V)</span>
+    </section>
+
+    <!-- ═══════ START NODE SELECTOR ═══════ -->
+    <section class="controls-section">
+      <div class="card" style="margin-bottom:1.5rem; padding: 0.75rem 1rem;">
+        <div class="start-node-bar">
+          <span class="label">Start node:</span>
+          <button class="node-btn active" data-type="start" data-node="A">A</button>
+          <button class="node-btn" data-type="start" data-node="B">B</button>
+          <button class="node-btn" data-type="start" data-node="C">C</button>
+          <button class="node-btn" data-type="start" data-node="D">D</button>
+          <button class="node-btn" data-type="start" data-node="E">E</button>
+          <button class="node-btn" data-type="start" data-node="F">F</button>
+        </div>
+        <div class="start-node-bar" style="margin-top: 0.75rem; display: none;">
+          <span class="label">Target node:</span>
+          <button class="node-btn" data-type="target" data-node="A">A</button>
+          <button class="node-btn" data-type="target" data-node="B">B</button>
+          <button class="node-btn" data-type="target" data-node="C">C</button>
+          <button class="node-btn" data-type="target" data-node="D">D</button>
+          <button class="node-btn" data-type="target" data-node="E">E</button>
+          <button class="node-btn active" data-type="target" data-node="F">F</button>
+          <span class="label" style="margin-left:0.5rem">← (Early Exit & Path Trace)</span>
+        </div>
+      </div>
+
+      <!-- ═══════ MAIN VISUALIZATION ═══════ -->
+      <div class="main-grid">
+
+        <!-- Left: Canvas + Status + Controls -->
+        <div>
+          <div class="card" style="padding:1rem;">
+            <div class="canvas-wrapper" id="canvas-container">
+              <canvas id="graph-canvas" width="650" height="400"></canvas>
+            </div>
+            <div class="status-bar">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="16" x2="12" y2="12" />
+                <line x1="12" y1="8" x2="12.01" y2="8" />
+              </svg>
+              <span id="status-message">Select a start node and press Run.</span>
+              <span class="step-counter" id="step-counter" style="display:none">Step 0 / 0</span>
+            </div>
+          </div>
+
+          <!-- Playback Controls -->
+          <div class="controls-row" style="margin-top:1rem;">
+            <button class="btn btn-primary" id="btn-run">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                <polygon points="5 3 19 12 5 21 5 3" />
+              </svg>
+              Run Prim's
+            </button>
+            <button class="btn" id="btn-pause" disabled>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                <rect x="6" y="4" width="4" height="16" />
+                <rect x="14" y="4" width="4" height="16" />
+              </svg>
+              Pause
+            </button>
+            <button class="btn" id="btn-step" disabled>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="13 17 18 12 13 7" />
+                <polyline points="6 17 11 12 6 7" />
+              </svg>
+              Step
+            </button>
+            <button class="btn" id="btn-reset">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="1 4 1 10 7 10" />
+                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+              </svg>
+              Reset
+            </button>
+            <div class="speed-control">
+              <span>Speed:</span>
+              <input type="range" id="speed-slider" min="1" max="5" value="3" step="1">
+              <span class="speed-label" id="speed-label">1x</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Sidebar -->
+        <div class="sidebar">
+          <div class="card">
+            <h3 class="panel-title">Legend</h3>
+            <ul class="legend-list">
+              <li class="legend-item"><span class="legend-dot unvisited"></span>Unvisited</li>
+              <li class="legend-item"><span class="legend-dot current"></span>Current Node</li>
+              <li class="legend-item"><span class="legend-dot updating"></span>Updating</li>
+              <li class="legend-item"><span class="legend-dot visited"></span>Visited / Done</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3 class="panel-title">Current Keys (Weights)</h3>
+            <div class="dist-grid" id="dist-grid">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+        </div>
+        <!-- Right: Code Panel (Now in main grid) -->
+        <div class="code-section" id="code-section">
+          <div class="code-section-title">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="16 18 22 12 16 6" />
+              <polyline points="8 6 2 12 8 18" />
+            </svg>
+            C++ Implementation
+            <span class="code-lang-badge">C++</span>
+          </div>
+          <div class="code-container" style="flex: 1; display: flex; flex-direction: column;">
+            <div class="code-titlebar">
+              <div class="code-titlebar-dots">
+                <span class="code-titlebar-dot red"></span>
+                <span class="code-titlebar-dot yellow"></span>
+                <span class="code-titlebar-dot green"></span>
+              </div>
+              <span class="code-titlebar-name">prims.cpp</span>
+            </div>
+            <div class="code-body" id="code-body" style="flex: 1;">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════ ALGORITHM INFO ═══════ -->
+    <section class="info-section">
+      <div class="info-grid">
+        <div class="info-card">
+          <h3>Time Complexity</h3>
+          <div class="info-value">O((V+E) log V)</div>
+          <p>Using a min-heap (priority queue) for efficient vertex extraction.</p>
+        </div>
+        <div class="info-card">
+          <h3>Space Complexity</h3>
+          <div class="info-value">O(V + E)</div>
+          <p>Adjacency list storage plus distance array and priority queue.</p>
+        </div>
+        <div class="info-card">
+          <h3>Algorithm Type</h3>
+          <div class="info-value">Greedy</div>
+          <p>Always picks the unvisited vertex with smallest edge weight connecting to the tree.</p>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ═══════ FOOTER ═══════ -->
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; 2026 DSA Visualizer. Made with <span class="heart">❤️</span> by itztechyparag & Rohan</p>
+      <p style="margin-top:0.25rem; opacity:0.5">Prim's Minimum Spanning Tree — Step-by-step visualization</p>
+    </div>
+  </footer>
+
+  <script src="prims.js"></script>
+</body>
+
+</html>
